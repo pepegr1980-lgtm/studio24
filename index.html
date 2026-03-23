@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendar Cita - Estética Belleza</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<header>
+<h1>Estética Belleza</h1>
+<p>Agendar tu cita nunca fue tan fácil</p>
+</header>
+<main>
+
+<h1>Agendar Cita</h1>
+<form id="citaForm">
+<label for="nombre">Nombre completo:</label>
+<input type="text" id="nombre" required>
+<label for="telefono">Teléfono / WhatsApp:</label>
+<input type="tel" id="telefono" required>
+<label for="servicio">Servicio:</label>
+<select id="servicio" required>
+<option value="">Selecciona un servicio</option>
+<option value="Corte de cabello">Corte de cabello</option>
+<option value="Manicure/Pedicure">Manicure/Pedicure</option>
+<option value="Depilación">Depilación</option>
+<option value="Facial">Facial</option>
+</select>
+<label for="fecha">Fecha:</label>
+<input type="date" id="fecha" required>
+<label for="hora">Hora:</label>
+<input type="time" id="hora" required>
+<label for="comentarios">Comentarios adicionales:</label>
+<textarea id="comentarios" rows="3" placeholder="Si tienes alguna solicitud especial..."></textarea>
+<button type="submit">Agendar Cita</button>
+</form>
+
+<div class="confirmation" id="confirmation"></div>
+
+<hr>
+
+<h1>Mis Citas</h1>
+<label for="buscarTelefono">Ingresa tu teléfono:</label>
+<input type="tel" id="buscarTelefono" placeholder="Ej: 5551234567">
+<button id="buscarBtn">Buscar</button>
+
+<table>
+<thead>
+<tr>
+<th>Servicio</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Estado</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody id="misCitas"></tbody>
+</table>
+
+</main>
+
+<script>
+const firebaseConfig = {
+   apiKey: "AIzaSyC4FVokHFRbbTc4rBifNyt5bvOX2CuzkWw",
+  authDomain: "calificaciones-9f753.firebaseapp.com",
+  databaseURL: "https://calificaciones-9f753-default-rtdb.firebaseio.com",
+  projectId: "calificaciones-9f753",
+  storageBucket: "calificaciones-9f753.firebasestorage.app",
+  messagingSenderId: "907008005737",
+  appId: "1:907008005737:web:3069998b0bad883cc574f8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let telefonoActual = "";
+let notificados = new Set();
+
+// Agendar nueva cita
+document.getElementById('citaForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const nombre = document.getElementById('nombre').value;
+  const telefono = document.getElementById('telefono').value;
+  const servicio = document.getElementById('servicio').value;
+  const fecha = document.getElementById('fecha').value;
+  const hora = document.getElementById('hora').value;
+  const comentarios = document.getElementById('comentarios').value;
+
+  if(!nombre || !telefono || !servicio || !fecha || !hora){alert("Por favor completa todos los campos obligatorios.");return;}
+  const fechaHora = new Date(fecha + 'T' + hora);
+
+  db.collection("citas").add({
+    nombre, telefono, servicio, fecha, hora, comentarios,
+    estado: 'Pendiente',
+    fechaHora: firebase.firestore.Timestamp.fromDate(fechaHora),
+    creado: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    const confirmation = document.getElementById('confirmation');
+    confirmation.style.display = 'block';
+    confirmation.innerHTML = `¡Gracias ${nombre}! Tu cita para ${servicio} ha sido agendada el ${fecha} a las ${hora}.`;
+    this.reset();
+    telefonoActual = telefono;
+    mostrarCitas(telefonoActual);
+  }).catch((error) => {alert("Error al agendar la cita: " + error);});
+});
+
+// Función para mostrar citas con botón cancelar
+function mostrarCitas(tel){
+  if(!tel) return;
+  const misCitasTbody = document.getElementById('misCitas');
+  misCitasTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+  db.collection("citas").where("telefono", "==", tel)
+    .get()
+    .then(snapshot => {
+      misCitasTbody.innerHTML = '';
+      if(snapshot.empty){
+        misCitasTbody.innerHTML = '<tr><td colspan="5">No se encontraron citas</td></tr>';
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement('tr');
+       tr.innerHTML = `
+  <td data-label="Servicio">${data.servicio || ''}</td>
+  <td data-label="Fecha">${data.fecha || ''}</td>
+  <td data-label="Hora">${data.hora || ''}</td>
+  <td data-label="Estado">${data.estado || 'Pendiente'}</td>
+  <td data-label="Acción">
+    ${data.estado === 'Pendiente' ? '<button class="cancelarClienteBtn">Cancelar</button>' : ''}
+  </td>
+`;
+
+        // Colores según estado
+        if(data.estado === 'Concretada') tr.style.background = '#e0e0e0';
+        if(data.estado === 'Cancelada') tr.style.background = '#f8d7da';
+
+        misCitasTbody.appendChild(tr);
+
+        // Botón cancelar
+        const btnCancelar = tr.querySelector('.cancelarClienteBtn');
+        if(btnCancelar){
+          btnCancelar.addEventListener('click', ()=>{
+            if(confirm(`¿Deseas cancelar tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora}?`)){
+              db.collection("citas").doc(doc.id).update({estado:'Cancelada'})
+              .then(()=>{
+                alert('Tu cita ha sido cancelada');
+              }).catch(err=>console.error(err));
+            }
+          });
+        }
+
+        // Notificaciones
+        if(data.estado === 'Concretada' && !notificados.has(doc.id)){
+          notificados.add(doc.id);
+          if("Notification" in window && Notification.permission === "granted"){
+            new Notification("Tu cita ha sido concretada", {
+              body: `Tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora} ha sido marcada como concretada.`,
+              icon: ""
+            });
+          }
+        }
+
+        if(data.estado === 'Cancelada' && !notificados.has(doc.id)){
+          notificados.add(doc.id);
+          if("Notification" in window && Notification.permission === "granted"){
+            new Notification("Tu cita fue cancelada", {
+              body: `Tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora} ha sido cancelada.`,
+              icon: ""
+            });
+          }
+        }
+
+      });
+    })
+    .catch(error => {
+      console.error("Error buscando citas:", error);
+      misCitasTbody.innerHTML = '<tr><td colspan="5">Error al buscar citas</td></tr>';
+    });
+}
+
+// Botón buscar citas
+document.getElementById('buscarBtn').addEventListener('click', ()=>{
+  const tel = document.getElementById('buscarTelefono').value.trim();
+  if(!tel) return alert("Ingresa un teléfono válido");
+  telefonoActual = tel;
+  mostrarCitas(telefonoActual);
+});
+
+// Solicitar permiso de notificación
+if("Notification" in window && Notification.permission !== "granted"){
+  Notification.requestPermission();
+}
+</script>
+</body>
+</html>

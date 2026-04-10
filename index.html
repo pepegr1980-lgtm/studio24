@@ -3,197 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agendar Cita - Estética Belleza</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<title>STUDIO24</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:white;
+}
+
+/* TITULO */
+h1{
+text-align:center;
+color:#ff0066;
+margin:15px 0;
+}
+
+/* HERO */
+.hero{
+padding:70px 20px;
+text-align:center;
+background-size:cover;
+background-position:center;
+transition:1s;
+}
+
+/* GALERIA */
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:8px;
+padding:10px;
+}
+
+img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:10px;
+}
+
+/* CONTACTO ABAJO */
+.contacto{
+background:#111;
+padding:15px;
+text-align:center;
+border-top:2px solid #25D366;
+}
+
+/* BOTON WHATSAPP */
+.whatsapp{
+background:#25D366;
+color:white;
+padding:12px;
+border-radius:30px;
+display:inline-block;
+text-decoration:none;
+font-weight:bold;
+width:90%;
+max-width:300px;
+}
+
+/* BOTON FLOTANTE */
+.float{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#25D366;
+width:60px;
+height:60px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px;
+text-decoration:none;
+box-shadow:0 5px 15px rgba(0,0,0,0.5);
+}
+</style>
 </head>
+
 <body>
-<header>
-<h1>Estética Belleza</h1>
-<p>Agendar tu cita nunca fue tan fácil</p>
-</header>
-<main>
 
-<h1>Agendar Cita</h1>
-<form id="citaForm">
-<label for="nombre">Nombre completo:</label>
-<input type="text" id="nombre" required>
-<label for="telefono">Teléfono / WhatsApp:</label>
-<input type="tel" id="telefono" required>
-<label for="servicio">Servicio:</label>
-<select id="servicio" required>
-<option value="">Selecciona un servicio</option>
-<option value="Corte de cabello">Corte de cabello</option>
-<option value="Manicure/Pedicure">Manicure/Pedicure</option>
-<option value="Depilación">Depilación</option>
-<option value="Facial">Facial</option>
-</select>
-<label for="fecha">Fecha:</label>
-<input type="date" id="fecha" required>
-<label for="hora">Hora:</label>
-<input type="time" id="hora" required>
-<label for="comentarios">Comentarios adicionales:</label>
-<textarea id="comentarios" rows="3" placeholder="Si tienes alguna solicitud especial..."></textarea>
-<button type="submit">Agendar Cita</button>
-</form>
+<h1>STUDIO24</h1>
 
-<div class="confirmation" id="confirmation"></div>
+<!-- HERO -->
+<div class="hero" id="hero">
+<h2>Fotografía Profesional</h2>
+<p>Momentos que duran para siempre 📸</p>
+</div>
 
-<hr>
+<!-- GALERÍA -->
+<div class="grid" id="gallery"></div>
 
-<h1>Mis Citas</h1>
-<label for="buscarTelefono">Ingresa tu teléfono:</label>
-<input type="tel" id="buscarTelefono" placeholder="Ej: 5551234567">
-<button id="buscarBtn">Buscar</button>
+<!-- CONTACTO -->
+<div class="contacto">
+<a class="whatsapp"
+href="https://wa.me/5216141234567?text=Hola%20quiero%20información%20de%20STUDIO24%20📸"
+target="_blank">
+📲 Contactar por WhatsApp
+</a>
+<p style="font-size:12px;color:#aaa;margin-top:8px;">
+Respuesta rápida • Reservas • Información
+</p>
+</div>
 
-<table>
-<thead>
-<tr>
-<th>Servicio</th>
-<th>Fecha</th>
-<th>Hora</th>
-<th>Estado</th>
-<th>Acción</th>
-</tr>
-</thead>
-<tbody id="misCitas"></tbody>
-</table>
-
-</main>
+<!-- BOTÓN FLOTANTE WHATSAPP -->
+<a class="float"
+href="https://wa.me/5216481222132?text=Hola%20quiero%20reservar%20una%20sesión"
+target="_blank">
+💬
+</a>
 
 <script>
-const firebaseConfig = {
-   apiKey: "AIzaSyC4FVokHFRbbTc4rBifNyt5bvOX2CuzkWw",
-  authDomain: "calificaciones-9f753.firebaseapp.com",
-  databaseURL: "https://calificaciones-9f753-default-rtdb.firebaseio.com",
-  projectId: "calificaciones-9f753",
-  storageBucket: "calificaciones-9f753.firebasestorage.app",
-  messagingSenderId: "907008005737",
-  appId: "1:907008005737:web:3069998b0bad883cc574f8"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-let telefonoActual = "";
-let notificados = new Set();
+/* IMÁGENES ALEATORIAS */
+const images = [
+"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+"https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+"https://images.unsplash.com/photo-1502920917128-1aa500764cbd",
+"https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+];
 
-// Agendar nueva cita
-document.getElementById('citaForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const nombre = document.getElementById('nombre').value;
-  const telefono = document.getElementById('telefono').value;
-  const servicio = document.getElementById('servicio').value;
-  const fecha = document.getElementById('fecha').value;
-  const hora = document.getElementById('hora').value;
-  const comentarios = document.getElementById('comentarios').value;
-
-  if(!nombre || !telefono || !servicio || !fecha || !hora){alert("Por favor completa todos los campos obligatorios.");return;}
-  const fechaHora = new Date(fecha + 'T' + hora);
-
-  db.collection("citas").add({
-    nombre, telefono, servicio, fecha, hora, comentarios,
-    estado: 'Pendiente',
-    fechaHora: firebase.firestore.Timestamp.fromDate(fechaHora),
-    creado: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    const confirmation = document.getElementById('confirmation');
-    confirmation.style.display = 'block';
-    confirmation.innerHTML = `¡Gracias ${nombre}! Tu cita para ${servicio} ha sido agendada el ${fecha} a las ${hora}.`;
-    this.reset();
-    telefonoActual = telefono;
-    mostrarCitas(telefonoActual);
-  }).catch((error) => {alert("Error al agendar la cita: " + error);});
-});
-
-// Función para mostrar citas con botón cancelar
-function mostrarCitas(tel){
-  if(!tel) return;
-  const misCitasTbody = document.getElementById('misCitas');
-  misCitasTbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-
-  db.collection("citas").where("telefono", "==", tel)
-    .get()
-    .then(snapshot => {
-      misCitasTbody.innerHTML = '';
-      if(snapshot.empty){
-        misCitasTbody.innerHTML = '<tr><td colspan="5">No se encontraron citas</td></tr>';
-        return;
-      }
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const tr = document.createElement('tr');
-       tr.innerHTML = `
-  <td data-label="Servicio">${data.servicio || ''}</td>
-  <td data-label="Fecha">${data.fecha || ''}</td>
-  <td data-label="Hora">${data.hora || ''}</td>
-  <td data-label="Estado">${data.estado || 'Pendiente'}</td>
-  <td data-label="Acción">
-    ${data.estado === 'Pendiente' ? '<button class="cancelarClienteBtn">Cancelar</button>' : ''}
-  </td>
-`;
-
-        // Colores según estado
-        if(data.estado === 'Concretada') tr.style.background = '#e0e0e0';
-        if(data.estado === 'Cancelada') tr.style.background = '#f8d7da';
-
-        misCitasTbody.appendChild(tr);
-
-        // Botón cancelar
-        const btnCancelar = tr.querySelector('.cancelarClienteBtn');
-        if(btnCancelar){
-          btnCancelar.addEventListener('click', ()=>{
-            if(confirm(`¿Deseas cancelar tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora}?`)){
-              db.collection("citas").doc(doc.id).update({estado:'Cancelada'})
-              .then(()=>{
-                alert('Tu cita ha sido cancelada');
-              }).catch(err=>console.error(err));
-            }
-          });
-        }
-
-        // Notificaciones
-        if(data.estado === 'Concretada' && !notificados.has(doc.id)){
-          notificados.add(doc.id);
-          if("Notification" in window && Notification.permission === "granted"){
-            new Notification("Tu cita ha sido concretada", {
-              body: `Tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora} ha sido marcada como concretada.`,
-              icon: ""
-            });
-          }
-        }
-
-        if(data.estado === 'Cancelada' && !notificados.has(doc.id)){
-          notificados.add(doc.id);
-          if("Notification" in window && Notification.permission === "granted"){
-            new Notification("Tu cita fue cancelada", {
-              body: `Tu cita para ${data.servicio} el ${data.fecha} a las ${data.hora} ha sido cancelada.`,
-              icon: ""
-            });
-          }
-        }
-
-      });
-    })
-    .catch(error => {
-      console.error("Error buscando citas:", error);
-      misCitasTbody.innerHTML = '<tr><td colspan="5">Error al buscar citas</td></tr>';
-    });
+/* HERO DINÁMICO */
+function changeHero(){
+let img = images[Math.floor(Math.random()*images.length)];
+document.getElementById("hero").style.backgroundImage = `url(${img})`;
 }
+setInterval(changeHero,3000);
+changeHero();
 
-// Botón buscar citas
-document.getElementById('buscarBtn').addEventListener('click', ()=>{
-  const tel = document.getElementById('buscarTelefono').value.trim();
-  if(!tel) return alert("Ingresa un teléfono válido");
-  telefonoActual = tel;
-  mostrarCitas(telefonoActual);
-});
-
-// Solicitar permiso de notificación
-if("Notification" in window && Notification.permission !== "granted"){
-  Notification.requestPermission();
+/* GALERÍA */
+function load(){
+let g=document.getElementById("gallery");
+g.innerHTML="";
+for(let i=0;i<12;i++){
+let img = images[Math.floor(Math.random()*images.length)];
+g.innerHTML += `<img src="${img}">`;
 }
+}
+load();
+
 </script>
+
 </body>
 </html>

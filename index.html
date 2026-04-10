@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STUDIO24 CRM PRO</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:white;
+}
+
+h1{
+text-align:center;
+color:#ff0066;
+margin:10px 0;
+}
+
+.hero{
+padding:70px 20px;
+text-align:center;
+background-size:cover;
+background-position:center;
+transition:1s;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:8px;
+padding:10px;
+}
+
+img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:10px;
+}
+
+/* FORM */
+.form{
+padding:15px;
+background:#111;
+margin:10px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#ff0066;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+/* WHATSAPP */
+.btn{
+display:block;
+text-align:center;
+margin:10px auto;
+padding:12px;
+width:90%;
+max-width:320px;
+border-radius:30px;
+text-decoration:none;
+font-weight:bold;
+background:#25D366;
+color:white;
+}
+
+/* FLOAT */
+.float{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#25D366;
+width:60px;
+height:60px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+text-decoration:none;
+}
+
+/* ========================= */
+/* 🤖 CHATBOT INTEGRADO */
+/* ========================= */
+
+.chatbox{
+position:fixed;
+bottom:90px;
+right:20px;
+width:300px;
+background:#111;
+border-radius:12px;
+overflow:hidden;
+display:none;
+flex-direction:column;
+border:1px solid #333;
+}
+
+.chat-header{
+background:#ff0066;
+padding:10px;
+text-align:center;
+font-weight:bold;
+}
+
+.chat-msg{
+padding:10px;
+height:200px;
+overflow-y:auto;
+font-size:14px;
+}
+
+.msg{
+margin:5px 0;
+padding:6px;
+border-radius:6px;
+}
+
+.bot{background:#222}
+.user{background:#ff0066;text-align:right}
+
+.chat-input{
+display:flex;
+border-top:1px solid #333;
+}
+
+.chat-input input{
+flex:1;
+padding:10px;
+border:none;
+outline:none;
+}
+
+.chat-input button{
+background:#25D366;
+border:none;
+color:white;
+padding:10px;
+cursor:pointer;
+}
+
+.chat-float{
+position:fixed;
+bottom:20px;
+left:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#25D366;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>STUDIO24 CRM PRO</h1>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+<h2>Fotografía Profesional</h2>
+<p>Clientes automáticos en WhatsApp 🤖</p>
+</div>
+
+<!-- GALERÍA -->
+<div class="grid" id="gallery"></div>
+
+<!-- FORM -->
+<div class="form">
+<h3>📩 Captura de cliente</h3>
+
+<input id="nombre" placeholder="Tu nombre">
+<input id="servicio" placeholder="Servicio (foto, video, evento)">
+<button onclick="capturar()">Enviar</button>
+</div>
+
+<!-- BOTÓN WHATSAPP -->
+<a class="btn"
+id="cotizar"
+target="_blank">
+📲 Cotizar por WhatsApp
+</a>
+
+<!-- FLOAT WHATSAPP -->
+<a class="float"
+href="https://wa.me/5216141234567"
+target="_blank">💬</a>
+
+<!-- BOTÓN CHATBOT -->
+<div class="chat-float" onclick="toggleChat()">🤖</div>
+
+<!-- CHATBOT -->
+<div class="chatbox" id="chatbox">
+
+<div class="chat-header">STUDIO24 Bot 🤖</div>
+
+<div class="chat-msg" id="chat">
+
+<div class="msg bot">
+Hola 👋 soy el asistente de STUDIO24<br><br>
+Elige:<br>
+1️⃣ Foto<br>
+2️⃣ Video<br>
+3️⃣ Eventos<br>
+4️⃣ Precios<br>
+5️⃣ WhatsApp
+</div>
+
+</div>
+
+<div class="chat-input">
+<input id="msg" placeholder="Escribe...">
+<button onclick="send()">➤</button>
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+
+/* FIREBASE */
+const firebaseConfig = {
+apiKey: "TU_API_KEY",
+authDomain: "TU_AUTH_DOMAIN",
+projectId: "TU_PROJECT_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* IMAGES */
+const images = [
+"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+"https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+"https://images.unsplash.com/photo-1502920917128-1aa500764cbd",
+"https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+];
+
+/* HERO */
+function changeHero(){
+let img = images[Math.floor(Math.random()*images.length)];
+document.getElementById("hero").style.backgroundImage=`url(${img})`;
+}
+setInterval(changeHero,3000);
+changeHero();
+
+/* GALERÍA */
+function loadGallery(){
+let g=document.getElementById("gallery");
+g.innerHTML="";
+for(let i=0;i<12;i++){
+let img=images[Math.floor(Math.random()*images.length)];
+g.innerHTML+=`<img src="${img}">`;
+}
+}
+loadGallery();
+
+/* CAPTURA */
+function capturar(){
+
+let nombre=document.getElementById("nombre").value;
+let servicio=document.getElementById("servicio").value;
+
+if(!nombre||!servicio){
+alert("Completa campos");
+return;
+}
+
+db.collection("clientes").add({
+nombre,
+servicio,
+fecha:new Date().toISOString()
+});
+
+let msg=`Hola soy ${nombre}, quiero ${servicio}`;
+let url="https://wa.me/5216481222132?text="+encodeURIComponent(msg);
+
+window.open(url,"_blank");
+}
+
+/* BOTÓN */
+document.getElementById("cotizar").href=
+"https://wa.me/5216481222132?text=Hola%20quiero%20cotizar%20una%20sesión";
+
+/* CHATBOT */
+function toggleChat(){
+let c=document.getElementById("chatbox");
+c.style.display=c.style.display==="flex"?"none":"flex";
+c.style.flexDirection="column";
+}
+
+function addMsg(text,type){
+document.getElementById("chat").innerHTML+=
+`<div class="msg ${type}">${text}</div>`;
+}
+
+/* RESPUESTAS BOT */
+function send(){
+
+let v=document.getElementById("msg").value.toLowerCase();
+addMsg(v,"user");
+
+setTimeout(()=>{
+
+if(v.includes("1")||v.includes("foto")){
+addMsg("📸 Foto desde $800","bot");
+
+}else if(v.includes("2")||v.includes("video")){
+addMsg("🎥 Video profesional","bot");
+
+}else if(v.includes("3")||v.includes("evento")){
+addMsg("🎉 Eventos completos","bot");
+
+}else if(v.includes("4")||v.includes("precio")){
+addMsg("💰 Paquetes desde $2500","bot");
+
+}else if(v.includes("5")||v.includes("whatsapp")){
+addMsg("📲 Abriendo WhatsApp...","bot");
+window.open("https://wa.me/5216481222132","_blank");
+
+}else{
+addMsg("❌ Escribe 1-5","bot");
+}
+
+},500);
+
+document.getElementById("msg").value="";
+}
+
+</script>
+
+</body>
+</html>

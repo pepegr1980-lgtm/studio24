@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STUDIO24 PRO</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:white;
+user-select:none;
+}
+
+h1{text-align:center;color:#ff0066;}
+
+.copyright-top{
+text-align:center;
+font-size:12px;
+color:#888;
+}
+
+/* HERO */
+.hero{
+height:300px;
+display:flex;
+align-items:center;
+justify-content:center;
+background-size:cover;
+background-position:center;
+position:relative;
+}
+
+.hero::after{
+content:"";
+position:absolute;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.45);
+}
+
+.hero-content{position:relative;z-index:2;}
+
+/* STORIES */
+#stories{
+display:flex;
+gap:10px;
+padding:10px;
+overflow-x:auto;
+}
+
+.story{
+width:70px;height:70px;
+border-radius:50%;
+overflow:hidden;
+border:2px solid #ff0066;
+flex-shrink:0;
+}
+
+.story img{
+width:100%;
+height:100%;
+object-fit:cover;
+pointer-events:none;
+-webkit-user-drag:none;
+user-select:none;
+}
+
+/* FEED */
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+padding:10px;
+}
+
+.card{
+background:#111;
+border-radius:16px;
+overflow:hidden;
+position:relative;
+animation:fadeIn .4s ease;
+transition:transform .3s ease;
+}
+
+.card:hover{
+transform:scale(1.02);
+}
+
+.card img{
+width:100%;
+height:240px;
+object-fit:cover;
+transition:transform .4s ease, filter .4s ease;
+pointer-events:none;
+-webkit-user-drag:none;
+user-select:none;
+}
+
+.card:hover img{
+transform:scale(1.08);
+filter:brightness(1.1);
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+.actions{
+display:flex;
+justify-content:space-between;
+padding:10px;
+font-size:14px;
+align-items:center;
+}
+
+.del-btn{
+background:#ff2d2d;
+border:none;
+color:white;
+padding:6px 10px;
+border-radius:8px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.del-btn:hover{
+transform:scale(1.2);
+background:#ff0000;
+}
+
+/* ADMIN */
+.admin-btn{
+position:fixed;
+bottom:20px;
+left:20px;
+background:#222;
+border:1px solid #ff0066;
+padding:12px 16px;
+border-radius:10px;
+cursor:pointer;
+z-index:999;
+}
+
+.modal{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,.85);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+.panel{
+background:#111;
+width:340px;
+padding:15px;
+border-radius:16px;
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+}
+
+/* WHATSAPP */
+.wa-float{
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+background:#25D366;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+cursor:pointer;
+z-index:9999;
+}
+
+.wa-chat{
+position:fixed;
+bottom:90px;
+right:20px;
+width:260px;
+background:#111;
+display:none;
+flex-direction:column;
+border-radius:12px;
+z-index:9999;
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+.wa-header{
+background:#25D366;
+padding:10px;
+display:flex;
+justify-content:space-between;
+}
+
+.wa-body{
+padding:10px;
+display:flex;
+flex-direction:column;
+gap:8px;
+}
+
+.wa-body button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:#222;
+color:white;
+cursor:pointer;
+}
+
+.wa-body button:hover{
+background:#333;
+}
+
+/* RESERVA */
+#clientName,#datePick,#timePick{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+background:#1a1a1a;
+color:white;
+}
+
+/* FOOTER */
+footer{
+text-align:center;
+padding:25px;
+color:#777;
+font-size:11px;
+line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<h1>STUDIO24 PRO- JOE RODRIGUEZ</h1>
+
+<div class="copyright-top">
+© 2026 Joe Rodriguez | STUDIO24 PRO | All Rights Reserved
+</div>
+
+<!-- HERO -->
+<div class="hero" id="hero"></div>
+
+<!-- STORIES -->
+<div id="stories"></div>
+
+<!-- ADMIN -->
+<div class="admin-btn" onclick="openAdmin()">ADMIN</div>
+
+<div class="modal" id="adminModal">
+<div class="panel">
+
+<h3>Panel Admin</h3>
+
+<input type="password" id="pass" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+
+<button onclick="closeAdmin()" style="background:#444;margin-top:10px;">✖ Cerrar</button>
+
+<div id="adminPanel" style="display:none;">
+
+<h4>📤 Subir imagen</h4>
+<input type="file" id="file">
+<select id="dest">
+<option value="galeria">Feed</option>
+<option value="hero">Header</option>
+</select>
+<button onclick="upload()">Publicar</button>
+
+<h4>📖 Story</h4>
+<input type="file" id="story">
+<button onclick="uploadStory()">Subir story</button>
+
+</div>
+
+</div>
+</div>
+
+<!-- FEED -->
+<div class="grid" id="feed"></div>
+
+<!-- WHATSAPP -->
+<div class="wa-float" onclick="toggleWA()">💬</div>
+
+<div class="wa-chat" id="wa">
+<div class="wa-header">
+WhatsApp
+<span onclick="toggleWA()">✖</span>
+</div>
+
+<div class="wa-body">
+
+<input type="text" id="clientName" placeholder="Tu nombre">
+<input type="date" id="datePick">
+<input type="time" id="timePick">
+
+<button onclick="reserveNow()">📅 Reservar ahora</button>
+<button onclick="send('Quiero cotizar un servicio de fotografía')">💰 Cotiza</button>
+<button onclick="send('Quiero ver disponibilidad de calendario')">📸 Calendario libre</button>
+
+</div>
+</div>
+
+<!-- FOOTER LEGAL -->
+<footer>
+<strong>STUDIO24 PRO © 2026 Joe Rodriguez</strong><br>
+Todos los derechos reservados.<br>
+Queda prohibida la reproducción, descarga o distribución sin autorización.
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+
+firebase.initializeApp({
+apiKey:"AIzaSyC4FVokHFRbbTc4rBifNyt5bvOX2CuzkWw",
+authDomain:"calificaciones-9f753.firebaseapp.com",
+projectId:"calificaciones-9f753"
+});
+
+const db=firebase.firestore();
+
+let posts=[];
+let stories=[];
+let isAdmin=false;
+
+/* BLOQUEO DESCARGA */
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("dragstart", e => e.preventDefault());
+
+document.addEventListener("keydown", function(e){
+if(e.key==="F12" ||
+(e.ctrlKey && e.key==="s") ||
+(e.ctrlKey && e.key==="u") ||
+(e.ctrlKey && e.shiftKey && e.key==="I")){
+e.preventDefault();
+}
+});
+
+/* ADMIN */
+function openAdmin(){document.getElementById("adminModal").style.display="flex";}
+function closeAdmin(){document.getElementById("adminModal").style.display="none";}
+function login(){
+if(document.getElementById("pass").value==="1234"){
+isAdmin=true;
+document.getElementById("adminPanel").style.display="block";
+}else alert("Incorrecto");
+}
+
+/* FIREBASE */
+db.collection("imagenes").orderBy("fecha","desc")
+.onSnapshot(snap=>{
+posts=[];
+snap.forEach(d=>posts.push({id:d.id,...d.data()}));
+render();
+updateHero();
+});
+
+db.collection("stories").orderBy("date","desc")
+.onSnapshot(snap=>{
+stories=[];
+snap.forEach(d=>stories.push(d.data()));
+renderStories();
+});
+
+/* HERO */
+function updateHero(){
+let heroImgs=posts.filter(p=>p.destino==="hero");
+if(heroImgs.length===0) return;
+let r=heroImgs[Math.floor(Math.random()*heroImgs.length)];
+document.getElementById("hero").style.backgroundImage="url("+r.url+")";
+}
+
+/* STORIES */
+function renderStories(){
+let s=document.getElementById("stories");
+s.innerHTML="";
+stories.forEach(st=>{
+s.innerHTML+=`<div class="story"><img src="${st.url}"></div>`;
+});
+}
+
+/* FEED */
+function render(){
+let f=document.getElementById("feed");
+let html="";
+posts.forEach(p=>{
+if(p.destino!=="galeria") return;
+
+html+=`
+<div class="card">
+<img src="${p.url}">
+<div class="actions">
+<span>❤️ ${p.likes||0}</span>
+<button onclick="like('${p.id}')">👍</button>
+${isAdmin ? `<button onclick="deleteImg('${p.id}')" class="del-btn">🗑</button>` : ""}
+</div>
+</div>`;
+});
+f.innerHTML=html;
+}
+
+/* LIKE */
+function like(id){
+db.collection("imagenes").doc(id).update({
+likes: firebase.firestore.FieldValue.increment(1)
+});
+}
+
+/* DELETE */
+function deleteImg(id){
+if(!isAdmin){alert("Solo admin");return;}
+db.collection("imagenes").doc(id).delete();
+}
+
+/* UPLOAD */
+function upload(){
+let file=document.getElementById("file").files[0];
+let dest=document.getElementById("dest").value;
+let r=new FileReader();
+r.onload=e=>{
+db.collection("imagenes").add({
+url:e.target.result,
+destino:dest,
+likes:0,
+fecha:Date.now()
+});
+};
+r.readAsDataURL(file);
+}
+
+/* STORY */
+function uploadStory(){
+let f=document.getElementById("story").files[0];
+let r=new FileReader();
+r.onload=e=>{
+db.collection("stories").add({
+url:e.target.result,
+date:Date.now()
+});
+};
+r.readAsDataURL(f);
+}
+
+/* WHATSAPP */
+function toggleWA(){
+let w=document.getElementById("wa");
+w.style.display=(w.style.display==="flex")?"none":"flex";
+}
+
+function send(msg){
+window.open("https://wa.me/5216481222132?text="+encodeURIComponent(msg));
+}
+
+/* RESERVA */
+function reserveNow(){
+let name=document.getElementById("clientName").value;
+let date=document.getElementById("datePick").value;
+let time=document.getElementById("timePick").value;
+
+if(!name||!date||!time){
+alert("Completa todos los campos");
+return;
+}
+
+let msg=
+"📅 NUEVA RESERVA%0A"+
+"👤 Nombre: "+name+"%0A"+
+"📆 Fecha: "+date+"%0A"+
+"⏰ Hora: "+time+"%0A"+
+"📸 Servicio: Fotografía";
+
+window.open("https://wa.me/5216481222132?text="+msg,"_blank");
+}
+
+</script>
+
+</body>
+</html>
